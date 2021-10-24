@@ -1,0 +1,54 @@
+﻿@page "/"
+@using BlazorCRUD10Mins.Data
+@using Microsoft.EntityFrameworkCore
+
+<h1>Posts</h1>
+
+<a href="/create" class="btn btn-success">Create</a>
+
+<table class="table table-responsive table-striped">
+    <thead>
+        <tr>
+            <th scope="col">Id (PK)</th>
+            <th scope="col">Title</th>
+            <th scope="col">Content</th>
+            <th scope="col">CRUD</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (_posts != null)
+        {
+            foreach (var post in _posts)
+            {
+                <tr>
+                    <th scope="row">@post.Id</th>
+                    <td>@post.Title</td>
+                    <td>@post.Content</td>
+                    <td>
+                        <a href="/update/@post.Id" class="btn btn-warning">Update</a>
+                        <button class="btn btn-danger" @onclick="() => DeletePost(post)">Delete</button>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+@code
+{
+    [Inject] AppDBContext AppDBContext { get; set; }
+    private List<Post> _posts = new List<Post>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _posts = await AppDBContext.Posts.ToListAsync();        
+    }
+
+    private async Task DeletePost(Post postToDelete)
+    {
+        AppDBContext.Posts.Remove(postToDelete);
+        await AppDBContext.SaveChangesAsync();
+        _posts.Remove(postToDelete);
+        StateHasChanged();
+    }
+}
